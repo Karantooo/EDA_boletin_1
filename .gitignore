@@ -5,6 +5,7 @@ test*
 *.txt
 .idea/*
 .vscode/*
+.cache/*
 vgcore*
 build/*.o
 */build/*.o
