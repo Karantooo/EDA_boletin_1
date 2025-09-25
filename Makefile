@@ -1,60 +1,63 @@
-#Compilador
+# Compilador
 CXX = g++
 
 # Flags de compilación
 CXXFLAGS_BASE = -I ./include -Wall
 CXXFLAGS_WARNINGS = -Wextra -Wpedantic -Wshadow -Wconversion -Wsign-conversion -Wfloat-equal
 CXXFLAGS_OPTIMIZATIONS = -O2 -march=native -mtune=native
-CXXFLAGS_DEBUGGING = -g #-ggdb	# Descomentar para depurar con GDB
+CXXFLAGS_DEBUGGING = -g #-ggdb
 
-# Flags de compilación para diferentes configuraciones
-CXXFLAGS_RELEASE = $(CXXFLAGS_BASE) $(CXXFLAGS_OPTIMIZATIONS) #$(CXXFLAGS_WARNINGS)
-CXXFLAGS_DEBUG = $(CXXFLAGS_BASE) $(CXXFLAGS_DEBUGGING) #$(CXXFLAGS_WARNINGS)
+CXXFLAGS_RELEASE = $(CXXFLAGS_BASE) $(CXXFLAGS_OPTIMIZATIONS)
+CXXFLAGS_DEBUG = $(CXXFLAGS_BASE) $(CXXFLAGS_DEBUGGING)
 
-# Configuración de compilación
-CXXFLAGS = $(CXXFLAGS_DEBUG)	 # Cambiar a $(CXXFLAGS_RELEASE) para compilación de producción
+CXXFLAGS = $(CXXFLAGS_DEBUG)   # Cambia a $(CXXFLAGS_RELEASE) para producción
 
-# Directorios y archivos
+# Directorios y ejecutables
 OBJ_DIR = build
-TARGET = main.out
+TARGETS = experimento_1.out experimento_2.out
 
-# Buscar todos los archivos .cpp en el directorio src
-SOURCES = $(wildcard ./src/*.cpp)
-OBJECTS = $(patsubst ./src/%.cpp, $(OBJ_DIR)/%.o, $(SOURCES))
+# Archivos fuente principales
+SRC1 = ./src/experimento_1.cpp
+SRC2 = ./src/experimento_2.cpp
 
-# Indica que las siguientes reglas no son archivos y deben ser ejecutadas desde 0 siempre
-.PHONY: all clean run debug
+# Fuentes comunes (sin los experimentos)
+COMMON_SOURCES = $(filter-out $(SRC1) $(SRC2), $(wildcard ./src/*.cpp))
+COMMON_OBJECTS = $(patsubst ./src/%.cpp, $(OBJ_DIR)/%.o, $(COMMON_SOURCES))
 
-# Regla por defecto: compilar el programa
-all: $(TARGET)
+# Objetos individuales
+OBJ1 = $(OBJ_DIR)/experimento_1.o $(COMMON_OBJECTS)
+OBJ2 = $(OBJ_DIR)/experimento_2.o $(COMMON_OBJECTS)
 
-# Regla para compilar el programa
-$(TARGET): $(OBJECTS)
-	@echo "Compilando el programa..."
-	@$(CXX) $(OBJECTS) -o $(TARGET) $(CXXFLAGS)
+.PHONY: all clean run1 run2
 
-# Regla para compilar los archivos objeto y guardarlos en obj/
+# Compilar todo
+all: $(TARGETS)
+
+# Reglas para cada ejecutable
+experimento_1.out: $(OBJ1)
+	@echo "Compilando experimento_1..."
+	@$(CXX) $(OBJ1) -o $@ $(CXXFLAGS)
+
+experimento_2.out: $(OBJ2)
+	@echo "Compilando experimento_2..."
+	@$(CXX) $(OBJ2) -o $@ $(CXXFLAGS)
+
+# Compilar archivos objeto
 $(OBJ_DIR)/%.o: ./src/%.cpp | $(OBJ_DIR)
 	@echo "Compilando $<..."
 	@$(CXX) -c $< -o $@ $(CXXFLAGS)
 
-# Crear el directorio obj si no existe
+# Crear directorio build si no existe
 $(OBJ_DIR):
 	@mkdir -p $(OBJ_DIR)
 
-# Regla para ejecutar el programa
-run: $(TARGET)
-	@echo "Ejecutando el programa...\n"
-	@./$(TARGET)
+# Ejecutar cada experimento
+run1: experimento_1.out
+	@./experimento_1.out
 
-# Regla para debuggear el programa
-debug: $(TARGET)
-	@gdb ./$(TARGET)
+run2: experimento_2.out
+	@./experimento_2.out
 
-# Regla para investigar las fugas de memoria
-memoria: $(TARGET)
-	@valgrind --leak-check=full --track-origins=yes ./$(TARGET)
-
-# Regla para limpiar los archivos generados
+# Limpiar
 clean:
-	@rm -rf $(OBJ_DIR) $(TARGET)
+	@rm -rf $(OBJ_DIR) $(TARGETS)
