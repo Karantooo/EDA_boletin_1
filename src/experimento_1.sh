@@ -15,7 +15,7 @@ REPS=32
 for ((r=1; r<=REPS; r++)); do
     echo "Repetición $r de $REPS"
     # Bucle de tamaños
-    for ((n=0; n<=1000000; n+=10000)); do
+    for ((n=1; n<=1000001; n+=10000)); do
         ./experimento_1.out $n >> $OUTPUT
     done
 done
